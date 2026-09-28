@@ -1,0 +1,13 @@
+<section class="card login-card" aria-labelledby="login-title">
+  <div class="login-stage" data-login-mascot></div>
+  <h1 id="login-title">น้องฝนเฝ้าบ้าน</h1>
+  <p class="sisters"><i class="rain" aria-hidden="true"></i>น้องสาวสายเฝ้าฝน จากจักรวาลน้องเก้า<i class="rose" aria-hidden="true"></i></p>
+  <p class="muted">ใส่รหัสผ่านที่ตั้งไว้ใน <span class="code">DASHBOARD_PASSWORD</span></p>
+  <form data-login novalidate>
+    <label class="visually-hidden" for="pw">รหัสผ่าน</label>
+    <input id="pw" name="password" type="password" autocomplete="current-password" placeholder="รหัสผ่าน" required>
+    <button class="btn primary" type="submit">เข้าไปดูบ้าน</button>
+    <p class="error-text" data-login-error role="alert"></p>
+  </form>
+  <p class="muted small" data-demo-hint hidden>โหมดสาธิต: รหัสผ่านคือ <b>demo</b></p>
+</section>

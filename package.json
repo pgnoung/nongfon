@@ -1,0 +1,28 @@
+{
+  "name": "nongfon",
+  "version": "1.0.0",
+  "description": "น้องฝนเฝ้าบ้าน — กล้องวงจรปิด + AI ช่วยเฝ้าระดับน้ำตอนกลางคืน ถ้าน้ำถึงเส้นที่ขีดไว้ ส่ง Telegram/LINE/iPhone และเปิดไซเรนปลุก",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
+  "main": "src/main.js",
+  "scripts": {
+    "start": "node src/main.js",
+    "demo": "node src/main.js --demo",
+    "check": "node src/main.js --once",
+    "setup": "node scripts/setup.js",
+    "secrets": "node scripts/setup.js --secrets",
+    "doctor": "node scripts/doctor.js",
+    "autostart": "node scripts/autostart.js",
+    "test:telegram": "node src/main.js --test-telegram",
+    "test:siren": "node src/main.js --test-siren",
+    "test": "node --test \"test/*.test.js\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.128.0",
+    "sharp": "^0.35.4"
+  }
+}

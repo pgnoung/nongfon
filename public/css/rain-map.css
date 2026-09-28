@@ -1,0 +1,367 @@
+/* Rain map (public/js/rain-map.js) — น้องเก้า universe: sticker-sheet controls + a scouter HUD over the map.
+   Colours and shapes come from the app tokens; the only literal colours are the rain bands just below.
+   Text on cards inherits the page colour (it flips at night; --ink does not), --ink only sits on light fills. */
+
+.rm {
+  /* Hourly rain bands (< 1, 1–2.5, 2.5–7.6, ≥ 7.6 mm/h). Cells sit on the light OSM map, which is only
+     dimmed at night, so the dark set is a touch brighter to stay readable on the dimmed map and dark cards. */
+  --rain-band-1: #9fd4f2;
+  --rain-band-2: #4fa6e3;
+  --rain-band-3: #2266c4;
+  --rain-band-4: #3b2fa0;
+  --rm-basemap: grayscale(.3) sepia(.2) hue-rotate(176deg) saturate(1.2) brightness(1.03); /* the street map leans blue like the rest of the page; the radar keeps its own colours */
+  --rm-map-h: 340px;
+
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  font-family: var(--font-body);
+}
+:root[data-theme='dark'] .rm {
+  --rain-band-1: #a6dcff;
+  --rain-band-2: #5cb4ff;
+  --rain-band-3: #3f7df0;
+  --rain-band-4: #6a52e8;
+  --rm-basemap: grayscale(.3) sepia(.2) hue-rotate(176deg) saturate(1.1) brightness(0.66);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .rm {
+    --rain-band-1: #a6dcff;
+    --rain-band-2: #5cb4ff;
+    --rain-band-3: #3f7df0;
+    --rain-band-4: #6a52e8;
+    --rm-basemap: grayscale(.3) sepia(.2) hue-rotate(176deg) saturate(1.1) brightness(0.66);
+  }
+}
+@media (max-width: 600px) {
+  .rm { --rm-map-h: 280px; }
+}
+
+/* ------------------------------------------------------------------ controls */
+.rm-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.rm-seg {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  padding: 3px;
+  border: var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  box-shadow: var(--drop);
+}
+.rm-btn {
+  appearance: none;
+  margin: 0;
+  min-height: 36px;
+  padding: 6px 13px;
+  border: var(--line);
+  border-color: transparent;
+  border-radius: var(--r-pill);
+  background: transparent;
+  color: var(--muted);
+  font: 500 0.92rem/1.2 var(--font-display);
+  white-space: nowrap;
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rm-btn[aria-pressed='false']:hover:not(:disabled) { color: inherit; background: var(--rain-soft); }
+.rm-btn:active:not(:disabled) { transform: translateY(1px); }
+/* the pressed option is a filled, outlined sticker — not a tint alone */
+.rm-btn[aria-pressed='true'] {
+  border: var(--line);
+  background: var(--rain);
+  color: var(--ink);
+  font-weight: 600;
+}
+.rm-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.rm-btn:focus-visible,
+.rm-play:focus-visible,
+.rm-msg-act:focus-visible,
+.rm-credit a:focus-visible {
+  outline: 3px solid var(--rain-deep);
+  outline-offset: 2px;
+  box-shadow: none;
+}
+/* the app's global :focus-visible squares corners to 8px; keep the pills round */
+.rm-btn:focus-visible,
+.rm-play:focus-visible,
+.rm-msg-act:focus-visible { border-radius: var(--r-pill); }
+
+/* ------------------------------------------------------------------ map stage */
+.rm-stage {
+  position: relative;
+  isolation: isolate; /* keeps Leaflet's z-indexes (up to 1000) under the sticky top bar */
+  overflow: hidden;
+  border: var(--line);
+  border-radius: var(--r-card);
+  background: var(--surface);
+  box-shadow: var(--drop);
+}
+/* reticle brackets in the corners, the same scouter look as the camera frames */
+.rm-stage::after {
+  content: '';
+  position: absolute;
+  z-index: 800; /* over the map and pin, under Leaflet's controls (1000) */
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(var(--cyan), var(--cyan)) 6px 6px / 16px 3px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) 6px 6px / 3px 16px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) calc(100% - 6px) 6px / 16px 3px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) calc(100% - 6px) 6px / 3px 16px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) 6px calc(100% - 6px) / 16px 3px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) 6px calc(100% - 6px) / 3px 16px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) calc(100% - 6px) calc(100% - 6px) / 16px 3px no-repeat,
+    linear-gradient(var(--cyan), var(--cyan)) calc(100% - 6px) calc(100% - 6px) / 3px 16px no-repeat;
+}
+.rm-dead .rm-stage::after { display: none; }
+.rm-map { width: 100%; height: var(--rm-map-h); }
+.rm .rm-map.leaflet-container {
+  background: var(--surface);
+  font: 0.75rem/1.5 var(--font-body);
+}
+.rm .rm-map.leaflet-container:focus-visible { outline: 3px solid var(--rain-deep); outline-offset: -3px; }
+.rm .rm-osm { filter: var(--rm-basemap); }
+
+/* radius ring + forecast cells (Leaflet paths; CSS beats their presentation attributes) */
+.rm .rm-ring {
+  fill: var(--rain);
+  fill-opacity: 0.06;
+  stroke: var(--rain-deep);
+  stroke-width: 2px;
+  stroke-dasharray: 7 6;
+}
+.rm-b1 { --band: var(--rain-band-1); }
+.rm-b2 { --band: var(--rain-band-2); }
+.rm-b3 { --band: var(--rain-band-3); }
+.rm-b4 { --band: var(--rain-band-4); }
+.rm .rm-cell {
+  fill: var(--band);
+  fill-opacity: 0.55; /* upstream CELL_OPACITY */
+  /* a hairline in the band colour keeps the 5×5 grid readable when neighbours share a band */
+  stroke: var(--band);
+  stroke-opacity: 0.9;
+  stroke-width: 1px;
+}
+
+/* house pin */
+.rm .rm-pin { background: none; border: 0; }
+.rm-pin-wrap { position: relative; width: 36px; height: 46px; }
+.rm-pin-art {
+  position: relative;
+  display: block;
+  width: 36px;
+  height: 46px;
+  overflow: visible;
+  filter: drop-shadow(2px 2px 0 var(--navy));
+}
+.rm-pin-body { fill: var(--rain); stroke: var(--navy); stroke-width: 1.5px; }
+.rm-pin-house { fill: var(--card); stroke: var(--navy); stroke-width: 1.2px; stroke-linejoin: round; }
+.rm-ping {
+  position: absolute;
+  left: 50%;
+  top: 44px;
+  width: 28px;
+  height: 28px;
+  margin: -14px 0 0 -14px;
+  border: 2px solid var(--rain-deep);
+  border-radius: 50%;
+  opacity: 0;
+  animation: rm-ping 2.4s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+}
+@keyframes rm-ping {
+  from { opacity: 0.9; transform: scale(0.3); }
+  to { opacity: 0; transform: scale(1.7); }
+}
+
+/* HUD: play/pause + what the map is showing right now */
+.rm-hud {
+  position: absolute;
+  z-index: 1100;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: calc(100% - 64px);
+  pointer-events: none;
+}
+.rm-hud > * { pointer-events: auto; }
+.rm-play {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: inherit;
+  box-shadow: var(--drop);
+  cursor: pointer;
+  transition: transform 160ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.rm-play:hover:not(:disabled) { transform: translate(-1px, -1px); }
+.rm-play:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
+.rm-play:disabled { opacity: 0.5; cursor: not-allowed; }
+.rm-i { width: 18px; height: 18px; }
+.rm-hud-text {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+  padding: 6px 14px 7px;
+  border: var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  box-shadow: var(--drop);
+}
+.rm-hud-label {
+  overflow: hidden;
+  font: 500 0.86rem/1.2 var(--font-display);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.rm-scrub {
+  display: block;
+  height: 3px;
+  overflow: hidden;
+  border-radius: var(--r-pill);
+  background: var(--rain-soft);
+}
+.rm-scrub[hidden] { display: none; }
+.rm-scrub i {
+  display: block;
+  height: 100%;
+  background: var(--rain-deep);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 300ms linear;
+}
+
+/* loading / dead-end message over the stage */
+.rm-msg {
+  position: absolute;
+  z-index: 1200;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 12px;
+  padding: 20px;
+  background: var(--surface);
+  text-align: center;
+}
+.rm-msg[hidden] { display: none; }
+.rm-msg p { max-width: 34ch; margin: 0; font: 500 1rem/1.55 var(--font-display); }
+.rm-msg-act {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 6px 18px;
+  border: var(--line);
+  border-radius: var(--r-pill);
+  background: var(--card);
+  color: inherit;
+  font: 500 0.95rem/1.2 var(--font-display);
+  text-decoration: none;
+  box-shadow: var(--drop);
+  cursor: pointer;
+}
+.rm-msg-act:hover { background: var(--rain-soft); }
+.rm-dead .rm-bar,
+.rm-dead .rm-hud,
+.rm-dead .rm-foot { display: none; }
+.rm-dead .rm-map { height: 190px; }
+
+/* ------------------------------------------------------------------ Leaflet chrome, restyled */
+.rm .rm-map .leaflet-bar {
+  overflow: hidden;
+  border: var(--line);
+  border-radius: var(--r-control);
+  background-clip: border-box;
+  box-shadow: var(--drop);
+}
+.rm .rm-map .leaflet-bar a {
+  width: 34px;
+  height: 34px;
+  border-bottom: var(--line);
+  background: var(--card);
+  color: inherit;
+  font: 500 1.15rem/32px var(--font-display);
+}
+.rm .rm-map .leaflet-bar a:last-child { border-bottom: 0; }
+.rm .rm-map .leaflet-bar a:hover { background: var(--rain-soft); }
+.rm .rm-map .leaflet-bar a:focus-visible { outline: 3px solid var(--rain-deep); outline-offset: -3px; }
+.rm .rm-map .leaflet-bar a.leaflet-disabled { background: var(--card); color: var(--muted); opacity: 0.55; }
+.rm .rm-map .leaflet-control-attribution {
+  padding: 1px 8px;
+  border-top-left-radius: var(--r-control);
+  background: var(--card);
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.rm .rm-map .leaflet-control-attribution a { color: inherit; text-decoration: underline; }
+.rm .leaflet-tooltip.rm-tip {
+  padding: 4px 10px;
+  border: var(--line);
+  border-radius: var(--r-control);
+  background: var(--card);
+  color: inherit;
+  box-shadow: var(--drop);
+  font: 500 0.8rem/1.35 var(--font-body);
+  font-variant-numeric: tabular-nums;
+}
+.rm .rm-tip.leaflet-tooltip-top::before { border-top-color: var(--navy); }
+.rm .rm-tip.leaflet-tooltip-bottom::before { border-bottom-color: var(--navy); }
+
+/* ------------------------------------------------------------------ footer */
+.rm-foot { display: grid; gap: 8px; }
+.rm-note { margin: 0; font-size: 0.95rem; line-height: 1.5; }
+.rm-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  margin: 0;
+  padding: 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  list-style: none;
+}
+.rm-legend[hidden] { display: none; }
+.rm-legend li { display: inline-flex; align-items: center; gap: 6px; }
+.rm-unit { font-family: var(--font-display); font-weight: 500; }
+.rm-sw {
+  width: 14px;
+  height: 14px;
+  flex: none;
+  border: var(--line);
+  border-radius: 4px;
+  background: var(--band);
+}
+.rm-sw.rm-dry { background: var(--card); }
+.rm-credit { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.rm-credit a { color: inherit; text-decoration: underline; text-underline-offset: 2px; }
+.rm-credit a:hover { text-decoration-thickness: 2px; }
+
+/* phones: tighter pills so both groups fit a 320px screen */
+@media (max-width: 400px) {
+  .rm-btn { padding: 6px 10px; font-size: 0.88rem; }
+  .rm-hud { top: 8px; left: 8px; }
+  .rm-hud-text { padding: 5px 11px 6px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rm-ping { animation: none; opacity: 0.5; transform: scale(1); }
+  .rm-btn,
+  .rm-play,
+  .rm-scrub i { transition: none; }
+}

@@ -1,0 +1,33 @@
+<section class="card" aria-labelledby="history-title">
+  <div class="card-title">
+    <span class="badge-icon"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-clock"/></svg></span>
+    <h1 id="history-title" style="font-size:1.3rem">ย้อนหลัง</h1>
+    <span class="spacer"></span>
+    <div class="tabs" role="tablist" aria-label="มุมมอง">
+      <button type="button" role="tab" id="tab-readings" aria-controls="panel-readings" aria-selected="true" data-tab="readings">ผลการตรวจ</button>
+      <button type="button" role="tab" id="tab-alerts" aria-controls="panel-alerts" aria-selected="false" data-tab="alerts">การแจ้งเตือน</button>
+    </div>
+  </div>
+
+  <div id="panel-readings" role="tabpanel" aria-labelledby="tab-readings" data-panel="readings">
+    <div class="filters" role="group" aria-label="กรองตามสถานะ">
+      <button type="button" data-filter="all" aria-pressed="true">ทั้งหมด</button>
+      <button type="button" data-filter="critical" aria-pressed="false">🚨 อันตราย</button>
+      <button type="button" data-filter="warning" aria-pressed="false">⚠️ เฝ้าระวัง</button>
+      <button type="button" data-filter="normal" aria-pressed="false">💧 ปกติ</button>
+      <button type="button" data-filter="unknown" aria-pressed="false">🌫️ มองไม่ชัด</button>
+    </div>
+    <div data-readings style="display:grid;gap:14px;margin-top:14px"></div>
+    <div class="btn-row" style="justify-content:center;margin-top:16px"><button class="btn soft" type="button" data-more hidden>โหลดเพิ่ม</button></div>
+  </div>
+
+  <div id="panel-alerts" role="tabpanel" aria-labelledby="tab-alerts" data-panel="alerts" hidden>
+    <p class="muted small" style="margin-bottom:10px">ทุกข้อความที่น้องฝนส่ง และทุกครั้งที่ไซเรนดัง พร้อมผลการส่งของแต่ละช่องทาง</p>
+    <ul class="events" data-alerts></ul>
+  </div>
+</section>
+
+<dialog class="sheet" data-detail aria-labelledby="detail-title">
+  <div class="sheet-head"><h2 id="detail-title" data-detail-title>ผลการตรวจ</h2><button class="icon-btn" type="button" data-detail-close aria-label="ปิด"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-x"/></svg></button></div>
+  <div class="sheet-body" data-detail-body></div>
+</dialog>

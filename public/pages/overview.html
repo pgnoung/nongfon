@@ -1,0 +1,123 @@
+<h1 class="visually-hidden">ภาพรวมระดับน้ำที่บ้าน</h1>
+
+<div class="ov">
+  <section class="console" data-console data-status="unknown" aria-labelledby="say">
+    <div class="stage">
+      <div class="stage-disc" aria-hidden="true"></div>
+      <div class="stage-fon" data-mascot></div>
+      <div class="gauge" data-gauge></div>
+    </div>
+    <div class="console-body">
+      <p class="bubble" id="say" data-bubble aria-live="polite">กำลังดูภาพล่าสุดให้นะคะ…<small>&nbsp;</small></p>
+      <p class="alarm-banner" data-alarm hidden><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-bell"/></svg><span data-alarm-text>ไซเรนกำลังดัง</span></p>
+      <div class="readout">
+        <div class="level-num" data-level aria-label="ระดับน้ำ">–<sub>/100</sub></div>
+        <div class="readout-side">
+          <span data-sticker></span>
+          <span class="distance" data-distance></span>
+        </div>
+      </div>
+      <div class="meta" data-meta></div>
+      <div class="btn-row">
+        <button class="btn primary" type="button" data-run><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-search"/></svg><span>ตรวจเดี๋ยวนี้</span></button>
+        <button class="btn danger" type="button" data-stop hidden><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-bell-off"/></svg>หยุดไซเรน</button>
+        <button class="btn soft" type="button" data-mute title="ข้อความเตือนยังส่งตามปกติ และเปิดเสียงคืนเองเมื่อน้ำลดต่ำกว่าระดับตอนนี้"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-mute"/></svg>งดเสียงจนน้ำลด</button>
+        <button class="btn soft" type="button" data-snooze><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-zzz"/></svg>งด 1 ชม.</button>
+        <button class="btn soft" type="button" data-unsnooze hidden><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-bell"/></svg>เปิดเสียงเตือนคืน</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="wall" aria-labelledby="wall-title">
+    <div class="wall-head">
+      <span class="badge-icon aqua"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-cctv"/></svg></span>
+      <h2 id="wall-title">กล้องวงจรปิด</h2>
+      <span class="spacer"></span>
+      <a class="btn small soft" href="/cameras"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-grid"/></svg>จอกล้องทั้งหมด</a>
+    </div>
+    <div class="wall-grid" data-cams></div>
+  </section>
+
+  <section class="card full" data-setup hidden aria-labelledby="setup-title">
+    <div class="card-title">
+      <span class="badge-icon sun"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-check"/></svg></span>
+      <h2 id="setup-title">เตรียมให้พร้อมก่อนเข้านอน</h2>
+      <span class="spacer"></span>
+      <span class="chip" data-setup-count></span>
+    </div>
+    <div class="progress" aria-hidden="true"><b data-setup-bar></b></div>
+    <ul class="setup-list" data-setup-list></ul>
+    <div class="setup-done" data-setup-done></div>
+  </section>
+
+  <section class="card full" aria-labelledby="chart-title">
+    <div class="card-title">
+      <span class="badge-icon"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-chart"/></svg></span>
+      <h2 id="chart-title">ระดับน้ำย้อนหลัง</h2>
+      <span class="spacer"></span>
+      <div class="range-tabs" role="group" aria-label="ช่วงเวลาของกราฟ" data-range-group>
+        <button type="button" data-range="6" aria-pressed="false">6 ชม.</button>
+        <button type="button" data-range="24" aria-pressed="true">24 ชม.</button>
+        <button type="button" data-range="72" aria-pressed="false">3 วัน</button>
+        <button type="button" data-range="168" aria-pressed="false">7 วัน</button>
+      </div>
+    </div>
+    <div class="chart" data-chart></div>
+    <div class="legend" data-legend>
+      <span><i class="water"></i>ระดับน้ำ (0 แห้ง · 50 เส้นเหลือง · 100 เส้นแดง)</span>
+      <span><i style="border-color:#E0A800"></i>เส้นเหลือง</span>
+      <span><i style="border-color:#D12C50"></i>เส้นแดง</span>
+      <span><i class="rainbar"></i>ฝน มม./ชม. (แกนขวา)</span>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="rain-title">
+    <div class="card-title">
+      <span class="badge-icon aqua"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-rain"/></svg></span>
+      <h2 id="rain-title">ฝนรอบบ้าน</h2>
+    </div>
+    <div data-rain></div>
+  </section>
+
+  <section class="card" aria-labelledby="hourly-title">
+    <div class="card-title">
+      <span class="badge-icon aqua"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-clock"/></svg></span>
+      <h2 id="hourly-title">สรุปรายชั่วโมง</h2>
+    </div>
+    <div data-hourly></div>
+  </section>
+
+  <section class="card stats" aria-label="สรุปคืนนี้">
+    <div class="stat" aria-labelledby="trend-title">
+      <div class="stat-head"><span class="badge-icon"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-trend"/></svg></span><h2 id="trend-title">แนวโน้มน้ำ</h2></div>
+      <div data-trend></div>
+    </div>
+    <div class="stat" aria-labelledby="health-title">
+      <div class="stat-head"><span class="badge-icon pink"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-heart"/></svg></span><h2 id="health-title">สุขภาพระบบ 24 ชม.</h2></div>
+      <div data-health></div>
+    </div>
+    <div class="stat" aria-labelledby="cost-title">
+      <div class="stat-head"><span class="badge-icon sun"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-coin"/></svg></span><h2 id="cost-title">ค่า AI</h2></div>
+      <div data-cost></div>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="events-title">
+    <div class="card-title">
+      <span class="badge-icon pink"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-bell"/></svg></span>
+      <h2 id="events-title">ความเคลื่อนไหวล่าสุด</h2>
+      <span class="spacer"></span>
+      <a class="small" href="/history#alerts">ดูทั้งหมด</a>
+    </div>
+    <ul class="events" data-events></ul>
+  </section>
+
+  <section class="card" aria-labelledby="quality-title">
+    <div class="card-title">
+      <span class="badge-icon aqua"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-image"/></svg></span>
+      <h2 id="quality-title">คุณภาพภาพจากกล้อง</h2>
+    </div>
+    <div class="chart" data-quality></div>
+    <div class="legend" data-quality-legend></div>
+  </section>
+</div>

@@ -1,0 +1,59 @@
+<section class="card" aria-labelledby="lines-title">
+  <div class="card-title">
+    <span class="badge-icon sun"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-pen"/></svg></span>
+    <h1 id="lines-title" style="font-size:1.3rem">ขีดเส้นเตือนบนภาพจริง</h1>
+    <span class="spacer"></span>
+    <div class="cam-tabs" role="group" aria-label="เลือกกล้อง" data-cam-tabs></div>
+  </div>
+
+  <div class="editor">
+    <div style="display:grid;gap:12px;min-width:0">
+      <div class="tool-row" role="toolbar" aria-label="เครื่องมือขีดเส้น">
+        <button class="pen y" type="button" data-pen="warning" aria-pressed="true"><i aria-hidden="true"></i>เส้นเหลือง · เริ่มน่าห่วง</button>
+        <button class="pen r" type="button" data-pen="critical" aria-pressed="false"><i aria-hidden="true"></i>เส้นแดง · อันตรายต้องปลุก</button>
+        <button class="pen g" type="button" data-pen="safe" aria-pressed="false"><i aria-hidden="true"></i>เส้นเขียว · น้ำลดถึงนี่ = ปลอดภัย</button>
+        <span class="spacer" style="flex:1"></span>
+        <button class="btn soft small" type="button" data-undo title="ย้อนกลับ (Ctrl+Z)"><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-undo"/></svg>ย้อนกลับ</button>
+        <button class="btn soft small" type="button" data-clear><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-trash"/></svg>ล้างเส้นนี้</button>
+      </div>
+      <div class="canvas-wrap" data-canvas>
+        <div class="noimg" data-noimg>กำลังโหลดภาพ…</div>
+        <img data-img alt="" hidden>
+        <svg data-svg role="img" aria-label="พื้นที่ขีดเส้น แตะเพื่อวางจุด" hidden></svg>
+      </div>
+      <div class="tool-row">
+        <button class="btn primary" type="button" data-save><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-check"/></svg>บันทึกเส้น</button>
+        <button class="btn soft" type="button" data-fresh><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-camera"/></svg>ถ่ายภาพใหม่</button>
+        <span class="saved" data-saved>บันทึกแล้ว ✓</span>
+        <span class="muted small" data-count></span>
+      </div>
+    </div>
+
+    <aside style="display:grid;gap:14px">
+      <div class="card" style="box-shadow:none;background:var(--surface-2)">
+        <div class="tip"><div data-tip-mascot></div>
+          <p class="small"><b>แตะบนภาพเพื่อวางจุด</b> อย่างน้อย 2 จุดต่อเส้น ลากจุดเพื่อขยับ แตะจุดค้างไว้ (หรือดับเบิลคลิก) เพื่อลบ</p></div>
+        <ul class="small" style="margin:10px 0 0;padding-left:1.2em;display:grid;gap:4px">
+          <li><b>เส้นเหลือง</b> = น้ำมาถึงตรงนี้เริ่มน่าห่วง (ส่งข้อความเตือน)</li>
+          <li><b>เส้นแดง</b> = น้ำถึงตรงนี้อันตราย ต้องปลุก (ข้อความ + ไซเรน)</li>
+          <li><b>เส้นเขียว</b> (ไม่บังคับ) = ขีดไกลบ้านกว่าเส้นเหลือง หลังเตือนแล้ว น้องฝนจะบอกว่า “ปลอดภัย” ก็ต่อเมื่อน้ำลดลงมาถึงเส้นนี้ และถ้าน้ำเลยเส้นเขียวมา น้องฝนจะตรวจถี่ขึ้นทุก 3 นาที</li>
+          <li>ขีดบนพื้น ขั้นบันได หรือผนัง ที่มองเห็นชัดทั้งกลางวันและกลางคืน</li>
+          <li>กล้องที่มีเส้นแดงจะเป็น “กล้องตัดสิน” ถ้ามองไม่เห็นขอบน้ำ น้องฝนจะบอกว่ามองไม่ชัด</li>
+        </ul>
+      </div>
+
+      <div class="field">
+        <label for="cam-note">บอก AI เพิ่มเกี่ยวกับกล้องนี้ (ไม่บังคับ)</label>
+        <textarea id="cam-note" data-note maxlength="300" placeholder="เช่น เส้นแดงคือขั้นบันไดหน้าบ้าน น้ำมักไหลมาจากท่อฝั่งซ้าย"></textarea>
+        <span class="help">น้องฝนจะส่งข้อความนี้ให้ Claude ทุกครั้งที่ดูกล้องนี้ <span class="saved" data-note-saved>บันทึกแล้ว ✓</span></span>
+      </div>
+
+      <div class="field">
+        <span class="label">ภาพอ้างอิงตอนน้ำแห้ง</span>
+        <span class="help">ช่วยให้ Claude เทียบก่อน/หลังได้แม่นขึ้น โดยเฉพาะตอนกลางคืน — เลือกภาพที่พื้นแห้งสนิท</span>
+        <div class="refs" data-refs></div>
+        <button class="btn soft small" type="button" data-set-ref><svg class="i" aria-hidden="true"><use href="/static/img/icons.svg#i-pin"/></svg>ใช้ภาพที่เห็นอยู่เป็นภาพอ้างอิง</button>
+      </div>
+    </aside>
+  </div>
+</section>

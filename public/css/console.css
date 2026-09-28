@@ -1,0 +1,180 @@
+/* The night-watch console: status stage with the rain gauge, the CCTV wall, charts and the night log.
+   Loaded on every page after app.css; only the overview and the camera wall use most of it. */
+
+/* ------------------------------------------------------------------ overview grid */
+.ov{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(0,1fr);gap:var(--gap);align-items:start}
+.ov > .full,.ov > .console,.ov > .wall{grid-column:1 / -1}
+.ov-side{display:grid;gap:var(--gap);align-content:start;min-width:0}
+@media (max-width:1100px){.ov{grid-template-columns:minmax(0,1fr)}}
+
+/* ------------------------------------------------------------------ status console */
+.console{position:relative;display:grid;grid-template-columns:minmax(280px,350px) minmax(0,1fr);gap:clamp(14px,2.2vw,26px);align-items:center;padding:clamp(16px,2.4vw,26px);border:var(--line);border-radius:var(--r-panel);box-shadow:var(--drop-lg);overflow:hidden;
+  /* rain drench with the raindrop-curl wallpaper: น้องฝน's version of the rose hero on น้องเก้า's pages */
+  background-color:var(--rain);color:var(--rain-text);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%23DCEBFE' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 40c1-9 5-16 10-22 5 6 9 12 9 17a9.5 9.5 0 0 1-18 2' stroke-opacity='.6'/%3E%3Cpath d='M70 82c.6-6 3.4-11 7-15 3.6 4 6 8 6 11.5a6.6 6.6 0 0 1-12.6 1.5' stroke-opacity='.4'/%3E%3C/g%3E%3C/svg%3E")}
+/* the state keeps its literal colour as a frame inside the panel (plus the sticker word, the gauge and her orb) */
+.console::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;box-shadow:inset 0 0 0 0 transparent;transition:box-shadow 300ms ease}
+.console[data-status=warning]::after{box-shadow:inset 0 0 0 6px var(--warn)}
+.console[data-status=critical]::after{box-shadow:inset 0 0 0 6px var(--stop-deep)}
+.console[data-status=pending]::after{box-shadow:inset 0 0 0 6px var(--cyan)}
+.console[data-status=unknown]::after{box-shadow:inset 0 0 0 6px var(--unknown)}
+.console[data-status=paused]{background-color:#B7CBE6}
+:root[data-theme=dark] .console{background-color:#1B3162;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%233F63A8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 40c1-9 5-16 10-22 5 6 9 12 9 17a9.5 9.5 0 0 1-18 2' stroke-opacity='.6'/%3E%3Cpath d='M70 82c.6-6 3.4-11 7-15 3.6 4 6 8 6 11.5a6.6 6.6 0 0 1-12.6 1.5' stroke-opacity='.4'/%3E%3C/g%3E%3C/svg%3E")}
+:root[data-theme=dark] .console[data-status=paused]{background-color:#1A2749}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme=light]) .console{background-color:#1B3162;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='96' height='96' viewBox='0 0 96 96'%3E%3Cg fill='none' stroke='%233F63A8' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 40c1-9 5-16 10-22 5 6 9 12 9 17a9.5 9.5 0 0 1-18 2' stroke-opacity='.6'/%3E%3Cpath d='M70 82c.6-6 3.4-11 7-15 3.6 4 6 8 6 11.5a6.6 6.6 0 0 1-12.6 1.5' stroke-opacity='.4'/%3E%3C/g%3E%3C/svg%3E")}
+  :root:not([data-theme=light]) .console[data-status=paused]{background-color:#1A2749}
+}
+/* words sitting straight on the drench use the deep rain text colour (5:1 or better on rain blue) */
+.console .distance,.console .meta,.console .level-num sub{color:var(--rain-text);opacity:.86}
+.console .meta b{color:var(--rain-text)}
+
+/* stage: น้องฝน beside her rain gauge */
+.stage{position:relative;height:330px}
+.stage-disc{position:absolute;left:6px;bottom:8px;width:226px;height:226px;border-radius:50%;background:var(--card);border:var(--line)}
+.stage-disc::after{content:"";position:absolute;inset:-12px;border-radius:50%;border:1.5px dashed var(--navy);opacity:.6}
+.stage-fon{position:absolute;left:-12px;bottom:0;width:250px;z-index:2;filter:drop-shadow(0 10px 10px rgb(30 50 100 / .22))}
+.stage-fon .fon{width:100%;height:auto}
+.stage-fon .fon-img{width:100%;height:auto}
+.gauge{position:absolute;right:0;top:4px;bottom:0;width:96px;z-index:1}
+
+/* the rain gauge (signature): a measuring cylinder with the owner's own lines on it */
+.rg{width:100%;height:100%;overflow:visible}
+.rg-glass{fill:var(--card);stroke:var(--navy);stroke-width:1.5}
+.rg-tick{stroke:var(--navy);stroke-width:1.2;opacity:.45}
+.rg-num{font:500 10px/1 var(--font-mono);fill:var(--muted)}
+.rg-water{transition:transform 450ms var(--ease-out)}
+.rg-water-body{fill:#9DCBFA}
+.rg-water-top{fill:#C9E4FF;stroke:var(--navy);stroke-width:1.5}
+.console[data-status=warning] .rg-water-body{fill:#FFC766}.console[data-status=warning] .rg-water-top{fill:#FFE0A3}
+.console[data-status=critical] .rg-water-body{fill:#FF8098}.console[data-status=critical] .rg-water-top{fill:#FFB3C1}
+.rg-line{stroke-width:3;stroke-dasharray:7 5;stroke-linecap:round}
+.rg-line.y{stroke:#E0A800}.rg-line.r{stroke:var(--stop-deep)}
+.rg-tag rect{stroke:var(--navy);stroke-width:1.5}
+.rg-tag text{font:500 10.5px/1 var(--font-display);fill:var(--ink)}
+.rg-tag.y rect{fill:var(--line-yellow)}.rg-tag.r rect{fill:var(--line-red)}.rg-tag.r text{fill:#fff}
+.rg-level rect{fill:var(--ink);stroke:var(--navy);stroke-width:1.5}
+.rg-level text{font:600 13px/1 var(--font-display);fill:#fff}
+.rg-shine{fill:#fff;opacity:.45}
+
+/* words */
+.console-body{display:grid;gap:14px;min-width:0;max-width:52rem}
+.bubble{position:relative;padding:12px 16px;border:var(--line);border-radius:18px;background:var(--card);box-shadow:var(--drop);font:500 clamp(1.08rem,.95rem + .5vw,1.32rem)/1.45 var(--font-display);text-wrap:balance}
+.bubble::before{content:"";position:absolute;left:-9px;top:26px;width:15px;height:15px;background:var(--card);border-left:var(--line);border-bottom:var(--line);transform:rotate(45deg)}
+.bubble small{display:block;margin-top:4px;font:400 .88rem/1.55 var(--font-body);color:var(--muted)}
+.readout{display:flex;flex-wrap:wrap;align-items:center;gap:10px 16px}
+.level-num{font:600 clamp(2.6rem,2rem + 2.4vw,3.6rem)/1 var(--font-display);font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.level-num sub{font:500 1rem/1 var(--font-display);color:var(--muted);vertical-align:baseline;margin-left:4px;letter-spacing:0}
+.readout-side{display:grid;gap:6px;justify-items:start}
+.distance{font-size:.92rem;color:var(--muted)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 16px;color:var(--muted);font-size:.88rem}
+.meta span{display:inline-flex;align-items:center;gap:6px}
+.meta b{color:var(--text);font-weight:500}
+.meta .i{width:15px;height:15px}
+.alarm-banner{display:flex;align-items:center;gap:10px;padding:10px 14px;border:var(--line);border-radius:var(--r-control);background:var(--stop-deep);color:#fff;font:500 1rem/1.4 var(--font-display);box-shadow:var(--drop)}
+
+@media (max-width:760px){
+  .console{grid-template-columns:minmax(0,1fr)}
+  .stage{height:290px;width:min(100%,330px);justify-self:center}
+  .stage-disc{width:196px;height:196px}
+  .stage-fon{width:218px;left:-10px}
+  .gauge{width:88px}
+  .bubble::before{left:36px;top:-9px;border-left:var(--line);border-top:var(--line);border-bottom:0}
+}
+
+/* ------------------------------------------------------------------ setup checklist */
+.setup-list{list-style:none;margin:12px 0 0;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px}
+.setup-list li{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;border:var(--line-soft);border-radius:var(--r-control);background:var(--surface)}
+.setup-list b{display:block;font:500 .95rem/1.4 var(--font-display)}
+.setup-list span{color:var(--muted);font-size:.84rem}
+.tick{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;border:var(--line);background:var(--card);flex:none;color:transparent}
+.setup-done{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+
+/* ------------------------------------------------------------------ CCTV tiles (overview wall + camera page) */
+.wall{display:grid;gap:var(--gap);align-content:start}
+.wall-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.wall-head h2{font-size:1.08rem}
+.cam{display:grid;gap:10px;padding:10px;background:var(--card);border:var(--line);border-radius:var(--r-card);box-shadow:var(--drop);min-width:0}
+.cam-top{display:flex;align-items:center;gap:8px;padding:2px 4px 0;min-width:0}
+.cam-top h3{font-size:1rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.cam-id{font:600 .74rem/1 var(--font-mono);letter-spacing:.06em;padding:4px 7px;border-radius:7px;background:var(--ink);color:#fff;flex:none}
+/* .frame is the dark monitor; .frame-inner takes the camera's own aspect ratio so the drawn lines
+   stay glued to the picture (4:3 and 16:9 cameras alike, and in full screen). */
+.frame{position:relative;border-radius:12px;border:var(--line);background:var(--cctv);overflow:hidden;isolation:isolate}
+.frame-inner{position:relative;width:100%;aspect-ratio:var(--ar,16 / 9);margin:0 auto}
+.frame-inner > img{position:absolute;inset:0;width:100%;height:100%;object-fit:fill}
+.frame .lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:2}
+.frame.hide-lines .lines{display:none}
+/* HUD: reticle brackets + labels, the scouter family look */
+.hud{position:absolute;inset:0;z-index:3;pointer-events:none;
+  background:
+    linear-gradient(var(--cyan),var(--cyan)) 10px 10px/18px 3px no-repeat,linear-gradient(var(--cyan),var(--cyan)) 10px 10px/3px 18px no-repeat,
+    linear-gradient(var(--cyan),var(--cyan)) calc(100% - 10px) 10px/18px 3px no-repeat,linear-gradient(var(--cyan),var(--cyan)) calc(100% - 10px) 10px/3px 18px no-repeat,
+    linear-gradient(var(--cyan),var(--cyan)) 10px calc(100% - 10px)/18px 3px no-repeat,linear-gradient(var(--cyan),var(--cyan)) 10px calc(100% - 10px)/3px 18px no-repeat,
+    linear-gradient(var(--cyan),var(--cyan)) calc(100% - 10px) calc(100% - 10px)/18px 3px no-repeat,linear-gradient(var(--cyan),var(--cyan)) calc(100% - 10px) calc(100% - 10px)/3px 18px no-repeat;
+  opacity:.85}
+.hud-tl,.hud-tr,.hud-bl,.hud-br{position:absolute;display:flex;gap:6px;align-items:center;font:600 .74rem/1 var(--font-mono);letter-spacing:.04em;color:#fff;text-shadow:0 1px 2px rgb(0 0 0 / .7)}
+.hud-tl{left:18px;top:16px}.hud-tr{right:18px;top:14px}.hud-bl{left:18px;bottom:15px}.hud-br{right:12px;bottom:10px;pointer-events:auto}
+.live-dot{display:inline-flex;align-items:center;gap:6px;padding:4px 8px;border-radius:7px;background:var(--stop-deep);color:#fff;text-shadow:none}
+.live-dot::before{content:"";width:8px;height:8px;border-radius:50%;background:#fff;animation:live-pulse 1.6s ease-in-out infinite}
+@keyframes live-pulse{50%{opacity:.25}}
+.snap-tag{padding:4px 8px;border-radius:7px;background:rgb(12 22 48 / .72)}
+.frame-btn{display:inline-grid;place-items:center;width:36px;height:36px;border-radius:10px;border:1.5px solid rgb(255 255 255 / .75);background:rgb(12 22 48 / .6);color:#fff;cursor:pointer;transition:background-color 160ms ease}
+.frame-btn:hover{background:rgb(12 22 48 / .85)}
+.frame-btn[aria-pressed=true]{background:rgb(130 235 253 / .32);border-color:var(--cyan)}
+.frame-btn[data-live][aria-pressed=true]{background:var(--stop-deep);border-color:#fff}
+.frame-btn .i{width:18px;height:18px}
+.frame .noimg{position:absolute;inset:0;display:grid;place-items:center;align-content:center;gap:8px;padding:20px;text-align:center;color:#C6D4EE;font-size:.92rem}
+/* re-checking: a cyan scan line crosses the picture (only while a check runs) */
+.frame.scanning::after{content:"";position:absolute;inset:0;z-index:4;pointer-events:none;background:linear-gradient(to bottom,transparent calc(50% - 10px),rgb(130 235 253 / .35) calc(50% - 2px),var(--cyan) 50%,transparent calc(50% + 2px));animation:scan-down 1.4s linear infinite}
+@keyframes scan-down{from{transform:translateY(-50%)}to{transform:translateY(50%)}}
+.cam-foot{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;padding:0 4px 2px;font-size:.9rem}
+.cam-foot p{flex:1 1 220px;min-width:0}
+.coverage{display:inline-flex;align-items:center;gap:6px;font:500 .82rem/1 var(--font-mono);color:var(--muted)}
+.coverage i{display:block;width:54px;height:8px;border-radius:99px;border:1.5px solid var(--navy);background:linear-gradient(90deg,#7FB8F7 var(--p,0%),transparent var(--p,0%))}
+
+/* the camera page wall */
+.wall-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,460px),1fr));gap:var(--gap)}
+.wall-grid.one{grid-template-columns:minmax(0,1fr)}
+.cam:fullscreen{padding:0;border:0;border-radius:0;background:#000;display:grid;place-items:center}
+.cam:fullscreen .frame{width:100vw;height:100vh;display:grid;place-items:center;border:0;border-radius:0;background:#000}
+.cam:fullscreen .frame-inner{width:min(100vw,calc(100vh * var(--arn,1.7778)))}
+.cam:fullscreen .cam-top,.cam:fullscreen .cam-foot{display:none}
+
+/* ------------------------------------------------------------------ charts */
+.range-tabs,.seg{display:inline-flex;padding:3px;border:var(--line);border-radius:var(--r-pill);background:var(--surface-2);gap:2px}
+.range-tabs button,.seg button{min-height:34px;padding:4px 13px;border:0;border-radius:var(--r-pill);background:transparent;color:var(--text);font:500 .86rem/1 var(--font-display);cursor:pointer;transition:background-color 160ms ease}
+.range-tabs button[aria-pressed=true],.seg button[aria-pressed=true]{background:var(--ink);color:#fff}
+:root[data-theme=dark] .range-tabs button[aria-pressed=true],:root[data-theme=dark] .seg button[aria-pressed=true]{background:var(--rain);color:var(--ink)}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]) .range-tabs button[aria-pressed=true],:root:not([data-theme=light]) .seg button[aria-pressed=true]{background:var(--rain);color:var(--ink)}}
+.chart{position:relative;min-height:220px}
+.chart svg{width:100%;height:auto;overflow:visible}
+.chart .grid-line{stroke:var(--border);stroke-width:1}
+.chart .axis-text{font:500 11px/1 var(--font-mono);fill:var(--muted)}
+.chart .area{fill:url(#waterGrad)}
+.chart .line{fill:none;stroke:var(--rain-deep);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.chart .rain-bar{fill:#7FB8F7;opacity:.45}
+.chart .cov-line{fill:none;stroke-width:1.6;stroke-dasharray:4 4;opacity:.9}
+.chart .ref-y{stroke:#E0A800;stroke-width:2;stroke-dasharray:7 5}
+.chart .ref-r{stroke:var(--stop-deep);stroke-width:2;stroke-dasharray:7 5}
+.chart .ref-label{font:500 11px/1 var(--font-display)}
+.chart .hover-line{stroke:var(--navy);stroke-width:1;stroke-dasharray:3 3}
+.chart-tip{position:absolute;transform:translate(-50%,calc(-100% - 12px));padding:6px 10px;border:var(--line);border-radius:10px;background:var(--card);box-shadow:var(--drop-sm);font-size:.82rem;white-space:nowrap;pointer-events:none;z-index:3}
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:8px;color:var(--muted);font-size:.82rem}
+.legend span{display:inline-flex;align-items:center;gap:7px}
+.legend i{display:inline-block;width:18px;height:0;border-top:3px dashed}
+.legend i.water{height:10px;border:1.5px solid var(--rain-deep);border-radius:3px;background:#9DCBFA}
+.legend i.rainbar{height:10px;width:8px;border:0;background:#7FB8F7;opacity:.6;border-radius:2px}
+
+/* ------------------------------------------------------------------ night log (stats) */
+.stats{display:grid;gap:0;padding:0;overflow:hidden}
+.stat{display:grid;gap:6px;padding:14px 18px;border-bottom:var(--line-soft)}
+.stat:last-child{border-bottom:0}
+.stat-head{display:flex;align-items:center;gap:8px}
+.stat-head h2{font-size:.98rem}
+.big-num{font:600 1.7rem/1.1 var(--font-display);font-variant-numeric:tabular-nums}
+.big-num small{font:400 .82rem/1 var(--font-body);color:var(--muted);margin-left:4px}
+.stat-chips{display:flex;flex-wrap:wrap;gap:6px}
+
+/* ------------------------------------------------------------------ misc overview bits */
+.cams-empty{display:grid;gap:10px;justify-items:start}

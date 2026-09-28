@@ -1,0 +1,33 @@
+# น้องฝนเฝ้าบ้าน — docker compose up -d --build
+services:
+  nongfon:
+    build: .
+    container_name: nongfon
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      TZ: Asia/Bangkok
+      DATA_DIR: /app/data
+      PORT: "8080" # inside the container; change the published port below instead
+    ports:
+      - "${PORT:-8080}:8080"
+    volumes:
+      - nongfon-data:/app/data
+    # lets the container reach go2rtc (or anything else) running on this computer
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  # Optional: go2rtc turns Xiaomi / Mi Home / cloud-only cameras into RTSP + JPEG links.
+  # On Linux you can uncomment this; on macOS run go2rtc natively instead (see docs/cameras.md).
+  # go2rtc:
+  #   image: alexxit/go2rtc:latest
+  #   container_name: go2rtc
+  #   restart: unless-stopped
+  #   network_mode: host
+  #   volumes:
+  #     - ./go2rtc:/config
+
+volumes:
+  nongfon-data:
