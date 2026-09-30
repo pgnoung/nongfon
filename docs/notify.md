@@ -27,7 +27,7 @@
 
 ## LINE (ผ่าน LINE Official Account)
 
-LINE Notify ปิดบริการตั้งแต่ปี 2025 จึงต้องใช้ **LINE OA + Messaging API** แทน (ข้อความแจ้งเตือนมีไม่กี่ข้อความต่อเดือน อยู่ในโควตาฟรีได้สบาย)
+LINE Notify ปิดบริการตั้งแต่ปี 2025 จึงต้องใช้ **LINE OA + Messaging API** แทน (ข้อความเตือนน้ำมีไม่กี่ข้อความต่อเดือน แต่ “สรุปรายชั่วโมง” ที่เปิดไว้ตั้งแต่แรกจะส่งเข้า LINE ด้วยชั่วโมงละ 1 ข้อความ ราว 720 ข้อความต่อเดือน ถ้าใช้ LINE เป็นช่องทางปลุก ให้ปิดสรุปรายชั่วโมง หรือเช็กโควตาแพ็กเกจ OA ก่อน ไม่งั้นโควตาหมดแล้วข้อความเตือนจะส่งไม่ออก)
 
 1. สร้าง LINE Official Account ของบ้านที่ [LINE Official Account Manager](https://manager.line.biz/) → เปิดใช้ **Messaging API**
 2. ไปที่ [LINE Developers Console](https://developers.line.biz/console/) → channel ของ OA → แท็บ **Messaging API** → ออก **Channel access token (long-lived)**
